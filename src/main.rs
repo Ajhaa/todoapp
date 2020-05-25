@@ -1,5 +1,7 @@
 mod todo;
 
+use std::env;
+use dotenv::dotenv;
 use std::convert::Infallible;
 use warp::Filter;
 use warp::reply;
@@ -34,10 +36,11 @@ async fn toggle_todo(pool: PgPool, id: String) -> Result<impl warp::Reply, Infal
 
 #[tokio::main] // or #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    //Create a connection pool
+    dotenv().ok();
+
     let pg_pool = PgPool::builder()
-        .max_size(5) // maximum number of connections in the pool
-        .build("postgresql://todoapp:securepassword@localhost:5432/todoapp?sslmode=disable").await?;
+        .max_size(5)
+        .build(&env::var("DATABASE_URL").unwrap()).await?;
     
     let todos = warp::get()
         .and(warp::path("todos"))

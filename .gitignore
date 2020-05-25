@@ -1,2 +1,3 @@
 todo_db
 /target
+.env
