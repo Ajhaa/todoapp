@@ -1,0 +1,17 @@
+version: '3.5'
+services:
+  db:
+    image: postgres:12
+    restart: unless-stopped                                                                                                                                                                                                                                                    
+    environment:                                                                                                                                                                                                                                                               
+      - POSTGRES_DB=todoapp                                                                                                                                                                                                                                                 
+      - PGDATA=/data/todoapp                                                                                                                                                                                                                                           
+      - POSTGRES_USER=todoapp                                                                                                                                                                                                                                               
+      - POSTGRES_PASSWORD=securepassword                                                                                                                                                                                                                                             
+    volumes:                                                                                                                                                                                                                                                                   
+      - ./todo_db:/data/todoapp
+    ports: 
+      - 5432:5432
+    container_name: todo_db
+
+  
