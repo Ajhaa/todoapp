@@ -41,4 +41,10 @@ impl Todo {
             .bind(content)
             .fetch_one(pool).await
     }
+
+    pub async fn delete(pool: &PgPool, id: &String) -> Result<Todo, sqlx::Error> {
+        sqlx::query_as("DELETE FROM todos WHERE id = $1::uuid RETURNING id::text, content, done")
+            .bind(id)
+            .fetch_one(pool).await
+    }
 }

@@ -33,8 +33,13 @@ async fn toggle_todo(pool: PgPool, id: String) -> Result<impl warp::Reply, Infal
     Ok(reply::json(&todo))
 }
 
+async fn delete_todo(pool: PgPool, id: String) -> Result<impl warp::Reply, Infallible> {
+    let todo = Todo::delete(&pool, &id).await.unwrap();
+    Ok(reply::json(&todo))
+}
 
-#[tokio::main] // or #[tokio::main]
+
+#[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
     dotenv().ok();
 
@@ -63,9 +68,12 @@ async fn main() -> Result<(), sqlx::Error> {
         .and(warp::body::json())
         .and_then(|pool: PgPool, body: HashMap<String, String>| post_todo(pool, body.get("content").unwrap().to_owned()));
 
-    // let routes = warp::ge
+    let del_todo = warp::delete()
+        .and(warp::path!("todos" / String))
+        .and(with_db(pg_pool.clone()))
+        .and_then(|id, pool| delete_todo(pool, id));
 
-    warp::serve(a_todo.or(toggle).or(new_todo).or(todos))
+    warp::serve(a_todo.or(del_todo).or(toggle).or(new_todo).or(todos))
         .run(([127, 0, 0, 1], 3030))
         .await;
 
