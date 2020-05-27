@@ -43,6 +43,11 @@ async fn delete_todo(pool: PgPool, id: String) -> Result<impl warp::Reply, Infal
 async fn main() -> Result<(), sqlx::Error> {
     dotenv().ok();
 
+    let with_cors = warp::cors()
+        .allow_any_origin()
+        .allow_methods(vec!["POST", "GET", "DELETE", "PATCH"])
+        .allow_header("Content-Type");
+
     let pg_pool = PgPool::builder()
         .max_size(5)
         .build(&env::var("DATABASE_URL").unwrap()).await?;
@@ -73,7 +78,10 @@ async fn main() -> Result<(), sqlx::Error> {
         .and(with_db(pg_pool.clone()))
         .and_then(|id, pool| delete_todo(pool, id));
 
-    warp::serve(a_todo.or(del_todo).or(toggle).or(new_todo).or(todos))
+    let all_routes = a_todo.or(del_todo).or(toggle).or(new_todo).or(todos);
+
+
+    warp::serve(all_routes.with(with_cors))
         .run(([127, 0, 0, 1], 3030))
         .await;
 
